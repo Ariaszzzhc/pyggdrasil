@@ -1,5 +1,6 @@
 class Config:
     SECRET_KEY = "You will never know"
+    MONGO_URI = "mongodb://localhost:27017/pyggdrasil"
 
 
 class DevConfig(Config):
