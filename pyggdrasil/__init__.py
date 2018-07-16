@@ -1,14 +1,12 @@
 from flask import Flask
-from flask_pymongo import PyMongo
 
 from .config import config_by_name
-from .response import JsonResponse
 
 from .controllers.auth_server_controller import auth_server_controller
 from .controllers.account_controller import account_controller
 from .controllers.session_server_controller import session_server_controller
 
-from .utils import mongo, bcrypt
+from .utils import mongo, bcrypt, JsonResponse
 
 
 def create_app(config_name):

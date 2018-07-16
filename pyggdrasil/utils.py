@@ -1,5 +1,7 @@
 import uuid
+import json
 
+from flask import Response
 from flask_pymongo import PyMongo
 from flask_bcrypt import Bcrypt
 
@@ -12,3 +14,11 @@ def unsigned_uuid(name):
         bytes = b''
 
     return str(uuid.uuid3(NULL_NAMESPACE, name)).replace('-', '')
+
+
+class JsonResponse(Response):
+    @classmethod
+    def force_type(cls, response, environ=None):
+        if isinstance(response, (list, dict)):
+            response = Response(json.dumps(response), mimetype='application/json')
+        return super(Response, cls).force_type(response, environ)

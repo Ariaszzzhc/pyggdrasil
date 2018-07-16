@@ -12,15 +12,28 @@ account_controller = Blueprint(
 @account_controller.route('/', methods=['POST'])
 def create_account():
     data = request.get_json()
-    account = mongo.db.accounts.find_one({'username': data['username']})
+    account = mongo.db.accounts.find_one({'email': data['email']})
     if not account:
-        mongo.db.accounts.insert_one({
-            "id": unsigned_uuid(data['username']),
-            "username": data['username'],
+        account = {
+            "id": unsigned_uuid(data['email']),
+            "email": data['email'],
+            "accountName": data['accountName'],
             "password": bcrypt.generate_password_hash(data['password']),
             "profiles": [],
             "properties": []
-        })
+        }
+
+        if data['createSameProfile']:
+            profile = {
+                "id": unsigned_uuid(data['accountName']),
+                "name": data['accountName'],
+                "model": "default",
+                "textures": []
+            }
+
+            account["profiles"].append(profile)
+
+        mongo.db.accounts.insert_one(account)
 
         return {
             "message": "注册成功"
