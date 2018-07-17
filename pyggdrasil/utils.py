@@ -22,3 +22,11 @@ class JsonResponse(Response):
         if isinstance(response, (list, dict)):
             response = Response(json.dumps(response), mimetype='application/json')
         return super(Response, cls).force_type(response, environ)
+
+
+def error_message_res(error, error_message, cause=''):
+    return {
+        "error": error,
+        "errorMessage": error_message,
+        "cause": cause
+    }

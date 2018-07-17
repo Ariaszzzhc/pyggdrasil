@@ -23,6 +23,7 @@ def create_account():
             "properties": []
         }
 
+        # TODO 角色的数据结构
         if data['createSameProfile']:
             profile = {
                 "id": unsigned_uuid(data['accountName']),
