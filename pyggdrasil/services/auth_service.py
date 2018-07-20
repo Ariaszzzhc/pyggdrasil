@@ -122,10 +122,10 @@ def serialize_profile(profile, properties=False, signature=None):
                 }
             }
 
-        value = base64.b64encode(json.dumps(value))
+        value = base64.b64encode(json.dumps(value).encode()).decode()
         ret['properties'][0]['value'] = value
 
-        if not signature:
+        if signature:
             ret['properties'][0]['signature'] = signature
 
     return ret

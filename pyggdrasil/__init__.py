@@ -5,6 +5,7 @@ from .config import config_by_name
 from .controllers.auth_server_controller import auth_server_controller
 from .controllers.account_controller import account_controller
 from .controllers.session_server_controller import session_server_controller
+from .controllers.root_controller import root_controller
 from .exceptions import PYggdrasilException
 
 from .utils import mongo, bcrypt, redis_store, JsonResponse
@@ -19,9 +20,10 @@ def create_app(config_name):
     bcrypt.init_app(app)
     redis_store.init_app(app)
 
+    app.register_blueprint(root_controller)
     app.register_blueprint(account_controller)
     app.register_blueprint(auth_server_controller)
-    # app.register_blueprint(session_server_controller)
+    app.register_blueprint(session_server_controller)
 
     @app.errorhandler(PYggdrasilException)
     def handle_exception(error):

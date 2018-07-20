@@ -14,6 +14,8 @@ session_server_controller = Blueprint(
 @session_server_controller.route('/session/minecraft/join', methods=['POST'])
 def join():
     data = request.get_json()
+    ip = request.remote_addr
+    print(ip)
     if data['serverId'] is None:
         raise IllegalArgumentException('serverId is null.')
     if data['selectedProfile'] is None:
@@ -25,9 +27,11 @@ def join():
         raise ForbiddenOperationException('Invalid credentials.')
 
     if token['boundProfile'] and token['boundProfile'] == data['selectedProfile']:
-        join_server(token, data['serverId'], data['ip'])
+        join_server(token, data['serverId'], ip)
     else:
         raise ForbiddenOperationException('Invalid profile.')
+
+    return '', 204
 
 
 @session_server_controller.route('/session/minecraft/hasJoined', methods=['GET'])
@@ -38,7 +42,7 @@ def has_joined():
         return '', 204
 
     if verify_user(args['username'], args['serverId'], args['ip']):
-        profile = mongo.db.find_one({'name': 'username'})
+        profile = mongo.db.profiles.find_one({'name': args['username']})
         return serialize_profile(profile)
 
     return '', 204
@@ -48,9 +52,14 @@ def has_joined():
 def get_character_profile(id):
     args = request.args.to_dict()
     keys = args.keys()
-    profile = mongo.db.profiles.findone({'id': id})
+    profile = mongo.db.profiles.find_one({'id': id})
     if 'unsigned' in keys:
-        return serialize_profile(profile, True, args['unsigned'])
+        if args['unsigned'] == 'true':
+            return serialize_profile(profile, True, None)
+        elif args['unsigned'] == 'false':
+            return serialize_profile(profile, True, 'signature')
+        else:
+            return '', 204
 
     return serialize_profile(profile, True)
 
