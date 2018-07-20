@@ -7,7 +7,7 @@ from .controllers.account_controller import account_controller
 from .controllers.session_server_controller import session_server_controller
 from .exceptions import PYggdrasilException
 
-from .utils import mongo, bcrypt, JsonResponse
+from .utils import mongo, bcrypt, redis_store, JsonResponse
 
 
 def create_app(config_name):
@@ -17,6 +17,7 @@ def create_app(config_name):
 
     mongo.init_app(app)
     bcrypt.init_app(app)
+    redis_store.init_app(app)
 
     app.register_blueprint(account_controller)
     app.register_blueprint(auth_server_controller)

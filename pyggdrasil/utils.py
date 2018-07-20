@@ -4,9 +4,11 @@ import json
 from flask import Response
 from flask_pymongo import PyMongo
 from flask_bcrypt import Bcrypt
+from flask_redis import FlaskRedis
 
 mongo = PyMongo(app=None)
 bcrypt = Bcrypt()
+redis_store = FlaskRedis()
 
 
 def unsigned_uuid(name):

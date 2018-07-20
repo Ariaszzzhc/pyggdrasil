@@ -1,5 +1,7 @@
 import uuid
 import time
+import json
+import base64
 
 from ..utils import mongo, bcrypt
 from ..exceptions import ForbiddenOperationException, IllegalArgumentException
@@ -95,16 +97,17 @@ def serialize_profile(profile, properties=False, signature=None):
         ret['properties'] = [
             {
                 'name': 'textures',
-                'value': {
-                    'timestamp': time.time(),
-                    'profileId': profile['id'],
-                    'profileName': profile['name'],
-                    'textures': {}
-                }
+                'value': None,
             }
         ]
+
+        value = {'timestamp': round(time.time() * 1000),
+                 'profileId': profile['id'],
+                 'profileName': profile['name'],
+                 'textures': {}
+                 }
         if not profile['skin'] == '':
-            ret['properties'][0]['value']['textures']['skin'] = {
+            value['textures']['skin'] = {
                 'url': profile['skin'],
                 'metadata': {
                     'model': profile['model']
@@ -112,12 +115,15 @@ def serialize_profile(profile, properties=False, signature=None):
             }
 
         if not profile['cape'] == '':
-            ret['properties'][0]['value']['textures']['cape'] = {
+            value['textures']['cape'] = {
                 'url': profile['cape'],
                 'metadata': {
                     'model': profile['model']
                 }
             }
+
+        value = base64.b64encode(json.dumps(value))
+        ret['properties'][0]['value'] = value
 
         if not signature:
             ret['properties'][0]['signature'] = signature
@@ -151,7 +157,7 @@ def validate_token(access_token, client_token):
     else:
         partial_expired = False
 
-    if client_token is None or client_token != token['clientToken']:
+    if client_token and client_token != token['clientToken']:
         raise ForbiddenOperationException('Invalid credentials.')
 
     return token, partial_expired

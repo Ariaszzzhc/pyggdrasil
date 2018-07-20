@@ -26,7 +26,7 @@ def authenticate():
     for profile in profiles:
         res['availableProfiles'].append(serialize_profile(profile))
 
-    if not token['boundProfile']:
+    if token['boundProfile']:
         res['selectedProfile'] = token['boundProfile']
 
     if data['requestUser']:
