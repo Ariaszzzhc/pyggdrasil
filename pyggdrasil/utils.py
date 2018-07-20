@@ -32,3 +32,10 @@ def error_message_res(error, error_message, cause=''):
         "errorMessage": error_message,
         "cause": cause
     }
+
+
+def get_server_meta():
+    with open('server_meta.json', 'r', encoding='utf-8') as f:
+        meta = json.load(f)
+
+    return meta

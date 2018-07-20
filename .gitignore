@@ -6,3 +6,7 @@ venv
 
 # Python Cache
 *.pyc
+
+# RSA key
+private
+public

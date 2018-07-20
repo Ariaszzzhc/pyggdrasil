@@ -1,0 +1,10 @@
+{
+  "meta": {
+    "serverName": "Pyggdrasil Server",
+    "implementationName": "Flask implementation for Yggdrasil",
+    "implementationVersion": "x.y.z"
+  },
+  "skinDomains": [
+    "xxx.yyy.zzz"
+  ]
+}

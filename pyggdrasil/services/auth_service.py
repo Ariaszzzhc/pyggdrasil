@@ -3,7 +3,9 @@ import time
 import json
 import base64
 
-from ..utils import mongo, bcrypt
+import rsa
+
+from ..utils import mongo, bcrypt, get_server_meta
 from ..exceptions import ForbiddenOperationException, IllegalArgumentException
 
 
@@ -122,11 +124,15 @@ def serialize_profile(profile, properties=False, signature=None):
                 }
             }
 
-        value = base64.b64encode(json.dumps(value).encode()).decode()
-        ret['properties'][0]['value'] = value
+        value_encoded = base64.b64encode(json.dumps(value).encode()).decode()
+        ret['properties'][0]['value'] = value_encoded
 
         if signature:
-            ret['properties'][0]['signature'] = signature
+            with open('private', 'r', encoding='utf-8') as f:
+                key_data = f.read()
+            private_key = rsa.PrivateKey.load_pkcs1(key_data, 'PEM')
+            sign = base64.b64encode(rsa.encrypt(json.dumps(value).encode(), private_key)).decode()
+            ret['properties'][0]['signature'] = sign
 
     return ret
 
