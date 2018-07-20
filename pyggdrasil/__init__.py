@@ -19,7 +19,7 @@ def create_app(config_name):
     bcrypt.init_app(app)
 
     app.register_blueprint(account_controller)
-    # app.register_blueprint(auth_server_controller)
+    app.register_blueprint(auth_server_controller)
     # app.register_blueprint(session_server_controller)
 
     @app.errorhandler(PYggdrasilException)
