@@ -15,7 +15,6 @@ session_server_controller = Blueprint(
 def join():
     data = request.get_json()
     ip = request.remote_addr
-    print(ip)
     if data['serverId'] is None:
         raise IllegalArgumentException('serverId is null.')
     if data['selectedProfile'] is None:
@@ -53,6 +52,10 @@ def get_character_profile(id):
     args = request.args.to_dict()
     keys = args.keys()
     profile = mongo.db.profiles.find_one({'id': id})
+
+    if profile is None:
+        return '', 204
+
     if 'unsigned' in keys:
         if args['unsigned'] == 'true':
             return serialize_profile(profile, True, None)

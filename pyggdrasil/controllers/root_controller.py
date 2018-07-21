@@ -1,5 +1,6 @@
 from flask import Blueprint, request
 from ..services.auth_service import mongo, serialize_profile
+from ..services.account_service import new_profile
 from ..utils import get_server_meta
 
 root_controller = Blueprint(
@@ -24,7 +25,17 @@ def get_profiles():
     res = []
     for name in data:
         profile = mongo.db.profiles.find_one({'name': name})
+        if profile is None:
+            continue
         res.append(serialize_profile(profile))
 
     return res
+
+
+@root_controller.route('/profiles', methods=['POST'])
+def create_profile():
+    account_id = request.json.get("accountID")
+    name = request.json.get("name")
+    new_profile(name, account_id)
+    return "OK"
 

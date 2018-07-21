@@ -5,7 +5,7 @@ import base64
 
 import rsa
 
-from ..utils import mongo, bcrypt, get_server_meta
+from ..utils import mongo, bcrypt
 from ..exceptions import ForbiddenOperationException, IllegalArgumentException
 
 
@@ -20,15 +20,15 @@ def validate_password(account):
     return find_user
 
 
-def acquire_token(account_id, client_token, selected_profile_id=None):
+def acquire_token(account_id, client_token, selected_profile=None):
     access_token = str(uuid.uuid4()).replace('-', '')
-    if selected_profile_id is None:
+    if selected_profile is None:
         if mongo.db.profiles.count_documents({'owner': account_id}) == 1:
             bound_profile = mongo.db.profiles.find_one({'owner': account_id})
         else:
             bound_profile = None
     else:
-        selected_profile = mongo.db.profiles.find_one({'id': selected_profile_id})
+        selected_profile = mongo.db.profiles.find_one({'id': selected_profile['id']})
         if not selected_profile['owner'] == account_id:
             raise IllegalArgumentException("the character to select doesn't belong to the user")
 
@@ -49,7 +49,8 @@ def acquire_token(account_id, client_token, selected_profile_id=None):
         return {
             'accessToken': access_token,
             'clientToken': client_token,
-            'boundProfile': bound_profile
+            'boundProfile': bound_profile,
+            'owner': account_id
         }
 
     else:
@@ -64,7 +65,8 @@ def acquire_token(account_id, client_token, selected_profile_id=None):
         return {
             'accessToken': access_token,
             'clientToken': client_token,
-            'boundProfile': serialize_profile(bound_profile)
+            'boundProfile': serialize_profile(bound_profile),
+            'owner': account_id
         }
 
 
@@ -151,7 +153,7 @@ def validate_token(access_token, client_token):
 
     token = mongo.db.tokens.find_one({'accessToken': access_token})
     if token is None:
-        raise IllegalArgumentException('Invalid credentials.')
+        raise ForbiddenOperationException('Invalid credentials.')
 
     now = int(time.time())
 

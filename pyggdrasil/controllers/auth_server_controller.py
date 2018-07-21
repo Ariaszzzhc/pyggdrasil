@@ -11,12 +11,16 @@ auth_server_controller = Blueprint(
 
 @auth_server_controller.route('/authenticate', methods=['POST'])
 def authenticate():
-    data = request.get_json()
-    if data['clientToken'] is None:
-        data['clientToken'] = str(uuid.uuid4()).replace('-', '')
-    account = validate_password({"username": data['username'], "password": data['password']})
-    account.pop('_id')
-    token = acquire_token(account['id'], data['clientToken'])
+    username = request.json.get('username')
+    password = request.json.get('password')
+    client_token = request.json.get('clientToken')
+    request_user = request.json.get('requestUser')
+
+    if client_token is None:
+        client_token = str(uuid.uuid4()).replace('-', '')
+
+    account = validate_password({"username": username, "password": password})
+    token = acquire_token(account['id'], client_token)
     profiles = available_profiles(account)
 
     res = {'accessToken': token['accessToken'],
@@ -29,7 +33,7 @@ def authenticate():
     if token['boundProfile']:
         res['selectedProfile'] = token['boundProfile']
 
-    if data['requestUser']:
+    if request_user:
         res['user'] = serialize_account(account)
 
     return res
@@ -37,19 +41,23 @@ def authenticate():
 
 @auth_server_controller.route('/refresh', methods=['POST'])
 def refresh():
-    data = request.get_json()
-    token, partial_expired = validate_token(data['accessToken'], data['clientToken'])
+    access_token = request.json.get('accessToken')
+    client_token = request.json.get('clientToken')
+    selected_profile = request.json.get('selectedProfile')
+    request_user = request.json.get('requestUser')
 
-    if data['selectedProfile']:
-        selected_profile = validate_profile(data['selectedProfile'])
+    token, partial_expired = validate_token(access_token, client_token)
 
-        if not token['boundProfile'] is None:
+    if selected_profile:
+        selected_profile = validate_profile(selected_profile)
+
+        if token['boundProfile']:
             raise IllegalArgumentException("Access token already has a profile assigned.")
 
         if token['owner'] != selected_profile['owner']:
             raise ForbiddenOperationException("Access denied.")
 
-        new_token = acquire_token(token['owner'], token['clientToken'], data['selectedProfile'])
+        new_token = acquire_token(token['owner'], token['clientToken'], selected_profile)
 
     else:
         new_token = acquire_token(token['owner'], token['clientToken'])
@@ -64,7 +72,7 @@ def refresh():
     if not token['boundProfile']:
         res['selectedProfile'] = token['boundProfile']
 
-    if data['requestUser']:
+    if request_user:
         res['user'] = serialize_account(mongo.db.accounts.find_one({'id': new_token['owner']}))
 
     return res
@@ -72,23 +80,28 @@ def refresh():
 
 @auth_server_controller.route('/validate', methods=['POST'])
 def validate():
-    data = request.get_json()
-    validate_token(data['accessToken'], data['clientToken'])
+    client_token = request.json.get('clientToken')
+    access_token = request.json.get('accessToken')
+    validate_token(access_token, client_token)
     return '', 204
 
 
 @auth_server_controller.route('/invalidate', methods=['POST'])
 def invalidate():
-    data = request.get_json()
-    token, partial_expired = validate_token(data['accessToken'], data['clientToken'])
+    access_token = request.json.get('accessToken')
+    if access_token is None:
+        return '', 204
+    token = mongo.db.tokens.find_one({'accessToken': access_token})
+    if token is None:
+        return '', 204
     mongo.db.tokens.delete_one({'accessToken': token['accessToken']})
     return '', 204
 
 
 @auth_server_controller.route('/signout', methods=['POST'])
 def sign_out():
-    data = request.get_json()
-    account = validate_password({"username": data['username'], "password": data['password']})
+    username = request.json.get('username')
+    password = request.json.get('password')
+    account = validate_password({"username": username, "password": password})
     mongo.db.tokens.delete_many({'owner': account['id']})
     return '', 204
-

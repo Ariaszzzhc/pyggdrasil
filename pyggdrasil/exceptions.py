@@ -11,7 +11,7 @@ class PYggdrasilException(Exception):
     def to_dict(self):
         rv = dict(self.payload or ())
         rv['error'] = self.error
-        rv['error_message'] = self.error_message
+        rv['errorMessage'] = self.error_message
         return rv
 
 

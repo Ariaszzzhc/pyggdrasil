@@ -11,17 +11,18 @@ account_controller = Blueprint(
 
 @account_controller.route('/', methods=['POST'])
 def create_account():
-    data = request.get_json()
+    create_same_profile = request.json.get('createSameProfile')
     account_data = {
-        "email": data['email'],
-        "username": data['username'],
-        "password": data['password']
+        "email": request.json.get('email'),
+        "username": request.json.get('username'),
+        "password": request.json.get('password')
     }
     new_account(account_data)
 
-    if data['createSameProfile']:
-        new_profile(data['username'], mongo.db.accounts.find_one({"email": data['email']})['id'])
+    if create_same_profile:
+        new_profile(request.json.get('username'),
+                    mongo.db.accounts.find_one({"email": request.json.get('email')})['id'])
 
     return {
-        "message": "Success"
-    }, 200
+               "message": "Success"
+           }, 200
