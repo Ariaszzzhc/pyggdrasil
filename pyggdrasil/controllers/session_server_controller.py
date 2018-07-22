@@ -37,10 +37,10 @@ def join():
 def has_joined():
     args = request.args.to_dict()
     keys = args.keys()
-    if 'username' not in keys or 'serverId' not in keys or 'ip' not in keys:
+    if 'username' not in keys or 'serverId' not in keys:
         return '', 204
 
-    if verify_user(args['username'], args['serverId'], args['ip']):
+    if verify_user(args['username'], args['serverId']):
         profile = mongo.db.profiles.find_one({'name': args['username']})
         return serialize_profile(profile)
 
