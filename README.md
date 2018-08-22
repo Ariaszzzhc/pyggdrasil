@@ -17,10 +17,7 @@
 ```shell
 git clone https://github.com/Ariaszzzhc/pyggdrasil.git
 cd pyggdrasil
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-export PYGGDRASIL_ENV=prod
+pipenv install
 # 签名密钥对
 openssl genrsa 4096 > private
 openssl rsa -in private -pubin > public
@@ -37,11 +34,11 @@ socket = 127.0.0.1:8001
 # 指向网站目录
 chdir = /path/to/pyggdrasil
 
-# python 启动程序文件
-wsgi-file = manage.py
+# 指向Virtualenv目录
+home = /path/to/virtualenv
 
-# python 程序内用以启动的 application 变量名
-callable = app
+# python 启动程序文件
+module = pyggdrasil:create_app('prod')
 
 # 处理器数
 processes = 1

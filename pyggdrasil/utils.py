@@ -21,8 +21,10 @@ def unsigned_uuid(name):
 class JsonResponse(Response):
     @classmethod
     def force_type(cls, response, environ=None):
+        headers = dict()
+        headers['Access-Control-Allow-Origin'] = '*'
         if isinstance(response, (list, dict)):
-            response = Response(json.dumps(response), mimetype='application/json')
+            response = Response(json.dumps(response), mimetype='application/json', headers=headers)
         return super(Response, cls).force_type(response, environ)
 
 
